@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">Кулинарная книга</string>
+    <string name="action_settings">Settings</string>
+    <string name="edit_title">Введите заголовок</string>
+    <string name="edit_description">Введите описание</string>
+    <string name="Steps_to_receipt">Шаги к рецепту</string>
+    <string name="camer">Камера</string>
+    <string name="gallery">Галлерея</string>
+    <string name="desc_receipt">Описание рецепта</string>
+    <string name="desc_step">Описание шагов</string>
+    <string name="desc_ing">Ингредиенты</string>
+</resources>

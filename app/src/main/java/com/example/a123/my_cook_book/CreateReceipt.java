@@ -1,7 +1,14 @@
 package com.example.a123.my_cook_book;
 
+import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -9,10 +16,17 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.Toast;
+
+import com.example.a123.my_cook_book.models.AppDbHelper;
+import com.example.a123.my_cook_book.models.DbOpenHelper;
+import com.example.a123.my_cook_book.models.TakeDb;
+import com.example.a123.my_cook_book.modelsDb.Receipts;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +43,39 @@ public class CreateReceipt extends AppCompatActivity {
     private StepsAdapter adapter;
     private List<String> mList;
 
+    private int TAKE_CAMERA = 1;
+    private static int element = 0;
+    private Receipts mReceipts;
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        if(RESULT_OK==resultCode){
+            if(2131==requestCode){
+                Uri selectedImage = data.getData();
+                String[] filePathColumn = {MediaStore.Images.Media.DATA};
+
+                Cursor cursor = getContentResolver().query(selectedImage,filePathColumn,null,null,null);
+                cursor.moveToFirst();
+                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                String picturePath = cursor.getString(columnIndex);
+                cursor.close();
+                ImageView img = (ImageView) manager.getChildAt(element).findViewById(R.id.takeImage);
+                img.setImageBitmap(BitmapFactory.decodeFile(picturePath));
+            }else {
+                Toast.makeText(getBaseContext(), String.valueOf(requestCode), Toast.LENGTH_LONG).show();
+                Log.d("CAMERA1", "take");
+                Bundle bundle = data.getExtras();
+                Bitmap bitmap = (Bitmap) bundle.get("data");
+                ImageView img = (ImageView) manager.getChildAt(element).findViewById(R.id.takeImage);
+                img.setScaleType(ImageView.ScaleType.FIT_XY);
+                img.setImageBitmap(bitmap);
+                Log.d("CAMERA1", "takeNoOk");
+            }
+        }else{
+
+            return;
+        }
+    }
 
 
 
@@ -36,6 +83,8 @@ public class CreateReceipt extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_receipt);
+
+        mReceipts = new Receipts();
 
         mList = new ArrayList<>();
 
@@ -75,7 +124,12 @@ public class CreateReceipt extends AppCompatActivity {
             }
         });
 
-        manager = new LinearLayoutManager(getBaseContext());
+        manager = new LinearLayoutManager(getBaseContext()){
+            @Override
+            public boolean canScrollVertically() {
+                return false;
+            }
+        };
         adapter = new StepsAdapter();
         mRecyclerView = (RecyclerView)findViewById(R.id.recycler_create);
         mRecyclerView.setLayoutManager(manager);
@@ -92,8 +146,8 @@ public class CreateReceipt extends AppCompatActivity {
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction)
             {
 
-                // Do Stuff
                 mList.remove(viewHolder.getAdapterPosition());
+                mList.clear();
                 adapter.notifyDataSetChanged();
 
             }
@@ -118,6 +172,18 @@ public class CreateReceipt extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
             }
         });
+
+        final Button btnCreate = (Button)findViewById(R.id.btn_create);
+        btnCreate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DbOpenHelper dbOpenHelper = TakeDb.getDbOpenHelper();
+                AppDbHelper appDbHelper = new AppDbHelper(dbOpenHelper);
+                mReceipts.setDescription(mDescription.getText().toString());
+                mReceipts.setTitle(mTitle.getText().toString());
+                //appDbHelper.saveReceipts();
+            }
+        });
     }
 
 
@@ -134,10 +200,9 @@ public class CreateReceipt extends AppCompatActivity {
             mImage.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-
+                    element = getAdapterPosition();
                     BottomSheetFrag dialog = new BottomSheetFrag();
                     dialog.show(getSupportFragmentManager(), dialog.getTag());
-
                 }
             });
         }

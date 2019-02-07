@@ -31,12 +31,14 @@ public class AppDbHelper implements DbHelper{
 
     @Override
     public Long saveReceipts(final Receipts receipt) {
-        return mDaoSession.getReceiptsDao().insert(receipt);
+        long id = mDaoSession.getReceiptsDao().insert(receipt);
+        return id;
     }
 
     @Override
     public Boolean saveReceiptsList(final List<Receipts> receiptList) {
         mDaoSession.getReceiptsDao().insertInTx(receiptList);
+
         return true;
     }
 

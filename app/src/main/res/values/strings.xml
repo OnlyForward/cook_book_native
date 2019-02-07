@@ -9,4 +9,5 @@
     <string name="desc_receipt">Описание рецепта</string>
     <string name="desc_step">Описание шагов</string>
     <string name="desc_ing">Ингредиенты</string>
+    <string name="create_receipt">Создать рецепт</string>
 </resources>
